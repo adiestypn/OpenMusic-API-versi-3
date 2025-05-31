@@ -1,15 +1,6 @@
-/**
- * @type {import('node-pg-migrate').ColumnDefinitions | undefined}
- */
-const shorthands = undefined;
+exports.shorthands = undefined;
 
-const _shorthands = shorthands;
-export { _shorthands as shorthands };
-
-/**
- * @param {import('node-pg-migrate').MigrationBuilder} pgm
- */
-export function up(pgm) {
+exports.up = (pgm) => {
   pgm.createTable('songs', {
     id: {
       type: 'VARCHAR(50)',
@@ -48,11 +39,8 @@ export function up(pgm) {
       notNull: true,
     },
   });
-}
+};
 
-/**
- * @param {import('node-pg-migrate').MigrationBuilder} pgm
- */
-export function down(pgm) {
+exports.down = (pgm) => {
   pgm.dropTable('songs');
-}
+};
