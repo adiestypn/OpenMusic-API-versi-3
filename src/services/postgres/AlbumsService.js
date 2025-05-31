@@ -38,17 +38,20 @@ class AlbumsService {
   }
 
   async editAlbumById(id, { name, year }) {
-    const query = {
-      text: 'UPDATE albums SET name = $1, year = $2 WHERE id = $3 RETURNING id',
-      values: [name, year, id],
-    };
-
+  const query = {
+    text: 'UPDATE albums SET name = $1, year = $2 WHERE id = $3 RETURNING id',
+    values: [name, year, id],
+  };
+  try {
     const result = await this._pool.query(query);
-
     if (!result.rowCount) {
       throw new NotFoundError('Gagal memperbarui album. Id tidak ditemukan');
     }
+  } catch (error) {
+    console.error('EDIT ALBUM SERVICE - Error during update:', error);
+    throw error; 
   }
+}
 
   async deleteAlbumById(id) {
     const query = {

@@ -40,7 +40,6 @@ class AlbumsHandler {
   };
 
   editAlbumByIdHandler = async (request, h) => {
-
     if (this._validator && typeof this._validator.validateAlbumPayload === 'function') {
       this._validator.validateAlbumPayload(request.payload);
     } else {
