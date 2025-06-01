@@ -1,6 +1,4 @@
-exports.shorthands = undefined;
-
-exports.up = (pgm) => {
+export function up(pgm) {
   pgm.createTable('songs', {
     id: {
       type: 'VARCHAR(50)',
@@ -20,27 +18,38 @@ exports.up = (pgm) => {
     },
     genre: {
       type: 'TEXT',
-      notNull: false,
+      notNull: false, 
     },
     duration: {
       type: 'INTEGER',
-      notNull: false,
+      notNull: false, 
     },
-    album_id: {
+    album_id: { 
       type: 'VARCHAR(50)',
-      notNull: false,
+      notNull: false, 
     },
-    inserted_at: {
-      type: 'TEXT',
-      notNull: true,
+    inserted_at: { 
+      type: 'TEXT', 
     },
-    updated_at: {
-      type: 'TEXT',
+    updated_at: { 
+      type: 'TEXT', 
       notNull: true,
     },
   });
-};
 
-exports.down = (pgm) => {
+  pgm.addConstraint('songs', 'fk_songs.album_id_albums.id', {
+    foreignKeys: {
+      columns: 'album_id',
+      references: 'albums(id)', 
+      onDelete: 'SET NULL',    
+                               
+    },
+  });
+}
+
+export function down(pgm) {
+
+  pgm.dropConstraint('songs', 'fk_songs.album_id_albums.id');
+
   pgm.dropTable('songs');
-};
+}

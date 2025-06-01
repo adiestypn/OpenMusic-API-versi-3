@@ -1,4 +1,3 @@
-// src/validator/playlists/schema.js
 const Joi = require('joi');
 
 const PostPlaylistPayloadSchema = Joi.object({
@@ -6,10 +5,9 @@ const PostPlaylistPayloadSchema = Joi.object({
 });
 
 const PostSongToPlaylistPayloadSchema = Joi.object({
-  songId: Joi.string().required(), // Asumsi songId adalah string
+  songId: Joi.string().required(), 
 });
 
-// Skema untuk DeleteSongFromPlaylistPayload sama dengan PostSongToPlaylistPayload
 const DeleteSongFromPlaylistPayloadSchema = PostSongToPlaylistPayloadSchema;
 
 module.exports = {

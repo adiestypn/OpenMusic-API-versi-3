@@ -2,12 +2,12 @@ const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
 const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
-const AuthorizationError = require('../../exceptions/AuthorizationError'); // Anda perlu membuat file ini
+const AuthorizationError = require('../../exceptions/AuthorizationError'); 
 
 class PlaylistsService {
-  constructor(songsService) { // Kita mungkin butuh songsService untuk verifikasi songId
+  constructor(songsService) { 
     this._pool = new Pool();
-    this._songsService = songsService; // Simpan instance songsService
+    this._songsService = songsService; 
   }
 
   async addPlaylist({ name, owner }) {
@@ -26,7 +26,6 @@ class PlaylistsService {
 
   async getPlaylists(owner) {
     const query = {
-      // Ambil username dari tabel users
       text: `SELECT p.id, p.name, u.username 
              FROM playlists p
              LEFT JOIN users u ON u.id = p.owner
@@ -38,8 +37,6 @@ class PlaylistsService {
   }
 
   async getPlaylistById(id) {
-    // Fungsi ini mungkin dibutuhkan internal atau untuk verifikasi
-    // Tidak secara langsung diminta di spek untuk endpoint GET /playlists/{id} tanpa /songs
     const query = {
         text: `SELECT p.id, p.name, u.username
                FROM playlists p
@@ -56,7 +53,7 @@ class PlaylistsService {
 
 
   async deletePlaylistById(id, owner) {
-    await this.verifyPlaylistOwner(id, owner); // Verifikasi kepemilikan
+    await this.verifyPlaylistOwner(id, owner); 
     const query = {
       text: 'DELETE FROM playlists WHERE id = $1 RETURNING id',
       values: [id],
@@ -65,7 +62,6 @@ class PlaylistsService {
     if (!result.rowCount) {
       throw new NotFoundError('Playlist gagal dihapus. Id tidak ditemukan');
     }
-    // Karena ada onDelete: 'CASCADE' pada playlist_songs, lagu-lagu terkait akan otomatis terhapus dari playlist_songs
   }
 
   async verifyPlaylistOwner(playlistId, owner) {
@@ -84,20 +80,18 @@ class PlaylistsService {
   }
 
   async addSongToPlaylist(playlistId, songId, owner) {
-    await this.verifyPlaylistOwner(playlistId, owner); // Verifikasi kepemilikan playlist
+    await this.verifyPlaylistOwner(playlistId, owner); 
 
-    // Verifikasi songId ada di tabel songs (menggunakan songsService)
-    // Anda perlu meng-inject songsService ke PlaylistsService, atau query langsung
     try {
-        await this._songsService.getSongById(songId); // Asumsi songsService memiliki method ini
+        await this._songsService.getSongById(songId); 
     } catch (error) {
         if (error instanceof NotFoundError) {
             throw new NotFoundError('Lagu gagal ditambahkan ke playlist. Lagu tidak ditemukan.');
         }
-        throw error; // lempar error lain jika ada
+        throw error; 
     }
     
-    const id = `playlistsong-${nanoid(16)}`; // ID untuk relasi
+    const id = `playlistsong-${nanoid(16)}`; 
     const query = {
       text: 'INSERT INTO playlist_songs(id, playlist_id, song_id) VALUES($1, $2, $3) RETURNING id',
       values: [id, playlistId, songId],
@@ -109,8 +103,7 @@ class PlaylistsService {
             throw new InvariantError('Lagu gagal ditambahkan ke playlist');
         }
     } catch (error) {
-        // Tangani jika ada unique constraint violation (lagu sudah ada di playlist)
-        if (error.code === '23505') { // Kode error PostgreSQL untuk unique violation
+        if (error.code === '23505') { 
             throw new InvariantError('Lagu sudah ada di dalam playlist ini.');
         }
         throw new InvariantError(`Lagu gagal ditambahkan ke playlist: ${error.message}`);
@@ -118,7 +111,7 @@ class PlaylistsService {
   }
 
   async getSongsFromPlaylist(playlistId, owner) {
-    await this.verifyPlaylistOwner(playlistId, owner); // Verifikasi kepemilikan
+    await this.verifyPlaylistOwner(playlistId, owner); 
 
     const playlistQuery = {
         text: `SELECT p.id, p.name, u.username
@@ -148,9 +141,8 @@ class PlaylistsService {
   }
 
   async deleteSongFromPlaylist(playlistId, songId, owner) {
-    await this.verifyPlaylistOwner(playlistId, owner); // Verifikasi kepemilikan
-    
-    // Tidak perlu verifikasi songId ada di tabel songs, cukup di playlist_songs
+    await this.verifyPlaylistOwner(playlistId, owner); 
+   
     const query = {
       text: 'DELETE FROM playlist_songs WHERE playlist_id = $1 AND song_id = $2 RETURNING id',
       values: [playlistId, songId],

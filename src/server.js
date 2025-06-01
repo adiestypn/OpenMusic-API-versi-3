@@ -1,50 +1,36 @@
-// src/server.js
 require('dotenv').config();
 
 const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
 
-// ... (Impor plugin dan service lain yang sudah ada)
 const AlbumsPlugin = require('./albums/index');
 const SongsPlugin = require('./songs');
 const users = require('./users');
 const authentications = require('./authentications');
+const playlists = require('./playlists'); 
 
-// Impor plugin playlist BARU
-const playlists = require('./playlists'); // <--- TAMBAHKAN INI
 
-// ... (Impor service lain yang sudah ada)
 const AlbumsService = require('./services/postgres/AlbumsService');
-const SongsService = require('./services/postgres/SongsService'); // songsService sudah ada
+const SongsService = require('./services/postgres/SongsService'); 
 const UsersService = require('./services/postgres/UsersService');
 const AuthenticationsService = require('./services/postgres/AuthenticationsService');
+const PlaylistsService = require('./services/postgres/PlaylistsService'); 
 
-// Impor service playlist BARU
-const PlaylistsService = require('./services/postgres/PlaylistsService'); // <--- TAMBAHKAN INI
-
-// ... (Impor validator lain yang sudah ada)
 const AlbumValidator = require('./validator/albums');
 const SongsValidator = require('./validator/songs');
 const UsersValidator = require('./validator/users');
 const AuthenticationsValidator = require('./validator/authentications');
-
-// Impor validator playlist BARU
-const PlaylistsValidator = require('./validator/playlists'); // <--- TAMBAHKAN INI
+const PlaylistsValidator = require('./validator/playlists'); 
 
 const TokenManager = require('./tokenize/TokenManager');
 const ClientError = require('./exceptions/ClientError');
-// Pastikan AuthorizationError juga diimpor jika belum (meskipun biasanya tidak diimpor langsung di server.js)
-// const AuthorizationError = require('./exceptions/AuthorizationError'); 
 
 const init = async () => {
-  // ... (Inisialisasi service lain yang sudah ada)
   const albumsService = new AlbumsService();
-  const songsService = new SongsService(); // songsService sudah ada
+  const songsService = new SongsService(); 
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
-
-  // Inisialisasi PlaylistsService dengan songsService
-  const playlistsService = new PlaylistsService(songsService); // <--- MODIFIKASI/TAMBAHKAN INI
+  const playlistsService = new PlaylistsService(songsService); 
 
 const server = Hapi.server({
     port: process.env.PORT,
@@ -56,11 +42,10 @@ const server = Hapi.server({
     },
   });
 
-  // ... (server.ext('onPreResponse', ...) dan server.auth.strategy(...) tetap sama)
   server.ext('onPreResponse', (request, h) => {
     const { response } = request;
     if (response instanceof Error) {
-      if (response instanceof ClientError) { // Ini akan menangani NotFoundError, InvariantError, AuthorizationError
+      if (response instanceof ClientError) { 
         const newResponse = h.response({
           status: 'fail',
           message: response.message,
@@ -106,7 +91,6 @@ const server = Hapi.server({
 
 
   await server.register([
-    // ... (Plugin lain yang sudah ada)
     {
       plugin: AlbumsPlugin,
       options: { service: albumsService, validator: AlbumValidator },
@@ -128,12 +112,11 @@ const server = Hapi.server({
         validator: AuthenticationsValidator,
       },
     },
-    // Daftarkan plugin playlist BARU
     {
-      plugin: playlists, // <--- TAMBAHKAN INI
+      plugin: playlists, 
       options: {
-        playlistsService, // Instance PlaylistsService yang sudah diinject songsService
-        songsService, // Tetap inject songsService jika dibutuhkan langsung oleh handler/validator di masa depan (opsional)
+        playlistsService, 
+        songsService, 
         validator: PlaylistsValidator,
       },
     },

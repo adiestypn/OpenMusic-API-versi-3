@@ -1,11 +1,10 @@
-// src/playlists/routes.js
 const routes = (handler) => [
   {
     method: 'POST',
     path: '/playlists',
     handler: handler.postPlaylistHandler,
     options: {
-      auth: 'openmusicapp_jwt', // Membutuhkan autentikasi
+      auth: 'openmusicapp_jwt', 
     },
   },
   {

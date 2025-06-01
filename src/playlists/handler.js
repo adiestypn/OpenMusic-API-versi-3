@@ -1,12 +1,10 @@
-// src/playlists/handler.js
-const ClientError = require('../exceptions/ClientError'); // Asumsi Anda sudah punya ini
+const ClientError = require('../exceptions/ClientError'); 
 
 class PlaylistsHandler {
   constructor(service, validator) {
     this._service = service;
     this._validator = validator;
 
-    // Binding 'this' untuk setiap handler method
     this.postPlaylistHandler = this.postPlaylistHandler.bind(this);
     this.getPlaylistsHandler = this.getPlaylistsHandler.bind(this);
     this.deletePlaylistByIdHandler = this.deletePlaylistByIdHandler.bind(this);
@@ -18,7 +16,7 @@ class PlaylistsHandler {
   async postPlaylistHandler(request, h) {
     this._validator.validatePostPlaylistPayload(request.payload);
     const { name } = request.payload;
-    const { id: credentialId } = request.auth.credentials; // Mengambil owner dari JWT
+    const { id: credentialId } = request.auth.credentials; 
 
     const playlistId = await this._service.addPlaylist({ name, owner: credentialId });
 
@@ -58,7 +56,7 @@ class PlaylistsHandler {
   async postSongToPlaylistHandler(request, h) {
     this._validator.validatePostSongToPlaylistPayload(request.payload);
     const { songId } = request.payload;
-    const { id: playlistId } = request.params; // Ambil playlistId dari path parameter
+    const { id: playlistId } = request.params; 
     const { id: credentialId } = request.auth.credentials;
 
     await this._service.addSongToPlaylist(playlistId, songId, credentialId);
@@ -86,7 +84,7 @@ class PlaylistsHandler {
   }
 
   async deleteSongFromPlaylistHandler(request, h) {
-    this._validator.validateDeleteSongFromPlaylistPayload(request.payload); // Perlu skema validator untuk ini
+    this._validator.validateDeleteSongFromPlaylistPayload(request.payload); 
     const { songId } = request.payload;
     const { id: playlistId } = request.params;
     const { id: credentialId } = request.auth.credentials;

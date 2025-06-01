@@ -18,17 +18,16 @@ class UsersService {
 
     const result = await this._pool.query(query);
 
-    if (result.rows.length > 0) { // BENAR: Jika username sudah ada
+    if (result.rows.length > 0) {
       throw new InvariantError('Gagal menambahkan user. Username sudah digunakan.');
     }
-    // Jika username belum ada, tidak melakukan apa-apa (valid)
   }
 
   async addUser({ username, password, fullname }) {
-    await this.verifyNewUsername(username); // Verifikasi dulu, akan throw error jika username sudah ada
+    await this.verifyNewUsername(username); 
 
     const id = `user-${nanoid(16)}`;
-    const hashedPassword = await bcrypt.hash(password, 10); // Pastikan password tidak null/undefined
+    const hashedPassword = await bcrypt.hash(password, 10); 
     
     const query = {
       text: 'INSERT INTO users (id, username, password, fullname) VALUES($1, $2, $3, $4) RETURNING id', // Tambahkan nama kolom
@@ -37,8 +36,8 @@ class UsersService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length || !result.rows[0].id) { // Pastikan ID dikembalikan
-      throw new InvariantError('User gagal ditambahkan karena kesalahan sistem.'); // Pesan error lebih generik jika insert gagal
+    if (!result.rows.length || !result.rows[0].id) { 
+      throw new InvariantError('User gagal ditambahkan karena kesalahan sistem.'); 
     }
     return result.rows[0].id;
   }
@@ -57,8 +56,6 @@ class UsersService {
 
     return result.rows[0];
   }
-
-  // Anda memerlukan fungsi ini untuk login di AuthenticationsHandler
   async verifyUserCredential(username, password) {
     const query = {
       text: 'SELECT id, password FROM users WHERE username = $1',
@@ -67,14 +64,14 @@ class UsersService {
     const result = await this._pool.query(query);
 
     if (!result.rows.length) {
-      throw new AuthenticationError('Kredensial yang Anda berikan salah'); // Username tidak ditemukan
+      throw new AuthenticationError('Kredensial yang Anda berikan salah'); 
     }
 
     const { id, password: hashedPassword } = result.rows[0];
     const match = await bcrypt.compare(password, hashedPassword);
 
     if (!match) {
-      throw new AuthenticationError('Kredensial yang Anda berikan salah'); // Password salah
+      throw new AuthenticationError('Kredensial yang Anda berikan salah'); 
     }
     return id;
   }
