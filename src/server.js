@@ -22,6 +22,10 @@ const UsersValidator = require('./validator/users');
 const AuthenticationsValidator = require('./validator/authentications');
 const PlaylistsValidator = require('./validator/playlists'); 
 
+const _exports = require('./exports');
+const ProducerService = require('./services/rabbitmq/ProducerService');
+const ExportsValidator = require('./validator/exports');
+
 const TokenManager = require('./tokenize/TokenManager');
 const ClientError = require('./exceptions/ClientError');
 
@@ -120,7 +124,14 @@ const server = Hapi.server({
         validator: PlaylistsValidator,
       },
     },
-  ]);
+    {
+      plugin: _exports,
+      options: {
+        service: ProducerService,
+        validator: ExportsValidator,
+      },
+    },
+  ])
 
   await server.start();
   console.log(`Server berjalan pada ${server.info.uri}`);
