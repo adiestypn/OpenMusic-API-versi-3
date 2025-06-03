@@ -1,5 +1,5 @@
 {
-  "name": "open-music-api-v1",
+  "name": "open-music-api-v3",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
