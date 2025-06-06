@@ -1,31 +1,23 @@
 class Listener {
-  /**
-   * Konstruktor untuk Listener.
-   * @param {object} playlistsService - Layanan untuk mengakses data playlist dari database.
-   * @param {object} mailSender - Layanan untuk mengirim email.
-   */
   constructor(playlistsService, mailSender) {
-    // Mengubah dependensi dari notesService menjadi playlistsService
     this._playlistsService = playlistsService;
     this._mailSender = mailSender;
  
     this.listen = this.listen.bind(this);
   }
  
-  /**
-   * Metode untuk mendengarkan dan memproses pesan dari message queue.
-   * @param {object} message - Pesan yang diterima dari RabbitMQ.
-   */
   async listen(message) {
     try {
-      // Mengharapkan playlistId dan targetEmail dari pesan
+      console.log(`[Consumer] Menerima pesan: ${message.content.toString()}`);
       const { playlistId, targetEmail } = JSON.parse(message.content.toString());
       
-      // Mengambil detail playlist beserta lagu-lagunya
-      const playlist = await this._playlistsService.getSongsFromPlaylist(playlistId);
+      console.log(`[Consumer] Memulai ekspor untuk playlistId: ${playlistId}`);
 
-      // Memformat data untuk attachment email
-      const data = {
+      // MEMANGGIL METODE YANG BENAR (getPlaylistForExport)
+      const playlist = await this._playlistsService.getPlaylistForExport(playlistId);
+      console.log(`[Consumer] Data untuk playlist "${playlist.name}" berhasil diambil.`);
+
+      const dataForEmail = {
         playlist: {
           id: playlist.id,
           name: playlist.name,
@@ -33,12 +25,10 @@ class Listener {
         },
       };
       
-      // Mengirim email dengan data playlist
-      const result = await this._mailSender.sendEmail(targetEmail, JSON.stringify(data));
-      console.log(`Email ekspor untuk playlist ${playlistId} berhasil dikirim.`);
-      console.log(result);
+      await this._mailSender.sendEmail(targetEmail, JSON.stringify(dataForEmail));
+      console.log(`[OK] Email untuk playlist ${playlistId} berhasil dikirim ke ${targetEmail}`);
     } catch (error) {
-      console.error(`Gagal memproses pesan ekspor: ${error.message}`);
+      console.error(`[GAGAL] Gagal memproses pesan ekspor: ${error.message}`);
     }
   }
 }

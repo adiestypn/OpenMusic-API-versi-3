@@ -128,7 +128,7 @@ const server = Hapi.server({
     {
       plugin: _exports,
       options: {
-        service: ProducerService,
+        service: ProducerService, playlistsService,
         validator: ExportsValidator,
       },
     },
