@@ -22,6 +22,7 @@ const UsersValidator = require('./validator/users');
 const AuthenticationsValidator = require('./validator/authentications');
 const PlaylistsValidator = require('./validator/playlists'); 
 
+// Exports
 const _exports = require('./exports');
 const ProducerService = require('./services/rabbitmq/ProducerService');
 const ExportsValidator = require('./validator/exports');
