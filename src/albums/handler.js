@@ -1,12 +1,9 @@
 const ClientError = require('../exceptions/ClientError'); 
 
 class AlbumsHandler {
-  // MODIFIKASI: Terima storageService dan uploadsValidator
-  constructor(service, validator, storageService, uploadsValidator) {
+  constructor(service, validator) {
     this._service = service;
-    this._validator = validator;
-    this._storageService = storageService;
-    this._uploadsValidator = uploadsValidator;
+    this._validator = validator; 
   }
 
   addAlbumHandler = async (request, h) => {
@@ -74,32 +71,6 @@ class AlbumsHandler {
       message: 'Album berhasil dihapus',
     };
   };
-
-postAlbumCoverHandler = async (request, h) => {
-  const { id } = request.params;
-  const cover = request.payload;
-
-  // Defensive check for file presence
-  if (!cover || !cover.hapi || !cover.hapi.headers) {
-    throw new ClientError('File sampul album tidak ditemukan atau formatnya salah', 400);
-  }
-
-  console.log('Actual file headers:', cover.hapi.headers);
-
-  // Validate image headers
-  this._uploadsValidator.validateImageHeaders(cover.hapi.headers);
-
-  // Continue to write file and update album cover
-  const filename = await this._storageService.writeFile(cover, cover.hapi);
-  const fileUrl = `http://${process.env.HOST}:${process.env.PORT}/albums/images/${filename}`;
-
-  await this._service.addAlbumCover(id, fileUrl);
-
-  return h.response({
-    status: 'success',
-    message: 'Sampul berhasil diunggah',
-  }).code(201);
-};
 }
 
 module.exports = AlbumsHandler;

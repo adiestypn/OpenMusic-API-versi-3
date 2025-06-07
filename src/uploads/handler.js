@@ -1,28 +1,30 @@
-const ClientError = require('../../exceptions/ClientError');
- 
-class UploadsHandler {
-  constructor(service, validator) {
-    this._service = service;
+const autoBind = require('auto-bind');
+
+class UploadImageHandler {
+  constructor(storageService, albumsService, validator) {
+    this._storageService = storageService;
+    this._albumsService = albumsService;
     this._validator = validator;
- 
-    this.postUploadImageHandler = this.postUploadImageHandler.bind(this);
+    autoBind(this);
   }
- 
+
   async postUploadImageHandler(request, h) {
-    const { data } = request.payload;
-    this._validator.validateImageHeaders(data.hapi.headers);
- 
-    const filename = await this._service.writeFile(data, data.hapi);
- 
+    const { id } = request.params;
+    const { cover } = request.payload;
+    this._validator.validateCoverImageHeaders(cover.hapi.headers);
+
+    const filename = await this._storageService.writeFile(cover, cover.hapi);
+    const url = `http://${process.env.HOST}:${process.env.PORT}/albums/${id}/${filename}`;
+
+    await this._albumsService.addAlbumCover(id, url);
+
     const response = h.response({
-    status: 'success',
-      data: {
-        fileLocation: `http://${process.env.HOST}:${process.env.PORT}/upload/images/${filename}`,
-      },
+      status: 'success',
+      message: 'Cover album berhasil ditambahkan',
     });
     response.code(201);
     return response;
   }
 }
- 
-module.exports = UploadsHandler;
+
+module.exports = UploadImageHandler;
