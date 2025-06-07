@@ -91,13 +91,13 @@ const init = async () => {
   // Daftarkan semua plugin Anda
   await server.register([
     {
-      plugin: AlbumsPlugin,
-      options: {
-        service: albumsService,
-        validator: AlbumValidator,
-        storageService,
-        uploadsValidator: UploadsValidator,
-      },
+        plugin: AlbumsPlugin,
+        options: {
+          service: albumsService,
+          validator: AlbumValidator,
+          storageService, // Teruskan storageService
+          uploadsValidator: UploadsValidator, // Teruskan uploadsValidator
+        },
     },
     {
       plugin: SongsPlugin,
@@ -136,6 +136,8 @@ const init = async () => {
   
   // Handler untuk error
   server.ext('onPreResponse', (request, h) => {
+
+    console.log('onPreResponse triggered!');
     const { response } = request;
     if (response instanceof Error) {
       if (response instanceof ClientError) {
@@ -144,6 +146,18 @@ const init = async () => {
           message: response.message,
         }).code(response.statusCode);
       }
+      // 💡 Handle "Payload too large" (413) error
+    if (
+      response.output &&
+      response.output.statusCode === 400 &&
+      response.output.payload &&
+      response.output.payload.message.includes('Payload content length greater than maximum allowed')
+    ) {
+      return h.response({
+        status: 'fail',
+        message: 'Payload content length greater than maximum allowed',
+      }).code(413);
+    }
       if (!response.isServer) {
         return h.continue;
       }
