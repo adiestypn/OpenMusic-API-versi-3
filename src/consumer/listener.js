@@ -13,7 +13,6 @@ class Listener {
       
       console.log(`[Consumer] Memulai ekspor untuk playlistId: ${playlistId}`);
 
-      // MEMANGGIL METODE YANG BENAR (getPlaylistForExport)
       const playlist = await this._playlistsService.getPlaylistForExport(playlistId);
       console.log(`[Consumer] Data untuk playlist "${playlist.name}" berhasil diambil.`);
 

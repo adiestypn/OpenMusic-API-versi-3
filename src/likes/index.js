@@ -1,5 +1,3 @@
-// src/likes/index.js
-
 const LikesHandler = require('./handler');
 const routes = require('./routes');
 

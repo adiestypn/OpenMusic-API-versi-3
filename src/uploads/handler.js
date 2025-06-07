@@ -12,7 +12,6 @@ async postUploadImageHandler(request, h) {
   const { id } = request.params;
   const { cover } = request.payload;
 
-  // 🔍 Ensure album exists
   await this._albumsService.getAlbumById(id);
 
   this._validator.validateImageHeaders(cover.hapi.headers);

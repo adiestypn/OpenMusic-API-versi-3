@@ -1,5 +1,4 @@
 class ExportsHandler {
-  // Pastikan constructor menerima playlistsService
   constructor(service, validator, playlistsService) {
     this._service = service;
     this._validator = validator;
@@ -15,8 +14,6 @@ class ExportsHandler {
     const { id: credentialId } = request.auth.credentials;
     const { targetEmail } = request.payload;
 
-    // Langkah Kritis: Verifikasi kepemilikan playlist.
-    // Ini akan gagal jika playlistsService tidak di-inject dengan benar dari server.js
     await this._playlistsService.verifyPlaylistOwner(playlistId, credentialId);
  
     const message = {
@@ -24,7 +21,6 @@ class ExportsHandler {
       targetEmail,
     };
  
-    // Kirim pesan ke queue yang benar
     await this._service.sendMessage('export:playlists', JSON.stringify(message));
  
     const response = h.response({

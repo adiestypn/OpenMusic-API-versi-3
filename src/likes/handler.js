@@ -1,5 +1,3 @@
-// src/likes/handler.js
-
 class LikesHandler {
   constructor(service) {
     this._service = service;

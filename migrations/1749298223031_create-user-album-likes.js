@@ -1,5 +1,3 @@
-// migrations/{timestamp}_create-table-user-album-likes.js
-
 exports.up = (pgm) => {
     pgm.createTable('user_album_likes', {
       id: {
@@ -9,18 +7,17 @@ exports.up = (pgm) => {
       user_id: {
         type: 'VARCHAR(50)',
         notNull: true,
-        references: '"users"', // Foreign key ke tabel users
+        references: '"users"', 
         onDelete: 'cascade',
       },
       album_id: {
         type: 'VARCHAR(50)',
         notNull: true,
-        references: '"albums"', // Foreign key ke tabel albums
+        references: '"albums"', 
         onDelete: 'cascade',
       },
     });
   
-    // Menambahkan UNIQUE constraint untuk memastikan user hanya bisa like satu kali
     pgm.addConstraint('user_album_likes', 'unique_user_id_and_album_id', {
       unique: ['user_id', 'album_id'],
     });

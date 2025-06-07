@@ -1,5 +1,3 @@
-// src/services/postgres/AlbumsService.js
-
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
 const InvariantError = require('../../exceptions/InvariantError');
@@ -24,7 +22,6 @@ class AlbumsService {
   }
 
   async getAlbumById(id) {
-    // Query untuk mengambil detail album utama
     const albumQuery = {
       text: 'SELECT id, name, year, cover_url FROM albums WHERE id = $1',
       values: [id],
@@ -35,7 +32,6 @@ class AlbumsService {
       throw new NotFoundError('Album tidak ditemukan');
     }
 
-    // Query untuk mengambil semua lagu yang berelasi dengan album
     const songsQuery = {
       text: 'SELECT id, title, performer FROM songs WHERE album_id = $1',
       values: [id],
@@ -44,12 +40,11 @@ class AlbumsService {
 
     const album = albumResult.rows[0];
 
-    // Gabungkan hasil query menjadi satu objek respons
     return {
       id: album.id,
       name: album.name,
       year: album.year,
-      coverUrl: album.cover_url, // Penting: map cover_url ke coverUrl
+      coverUrl: album.cover_url, 
       songs: songsResult.rows,
     };
   }

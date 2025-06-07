@@ -1,5 +1,4 @@
 // src/services/postgres/LikesService.js
-
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
 const InvariantError = require('../../exceptions/InvariantError');
@@ -12,10 +11,8 @@ class LikesService {
   }
 
   async addLikeToAlbum(userId, albumId) {
-    // First, verify the album exists
     await this._verifyAlbumExists(albumId);
 
-    // Check if the user has already liked the album
     const checkQuery = {
       text: 'SELECT id FROM user_album_likes WHERE user_id = $1 AND album_id = $2',
       values: [userId, albumId],
@@ -38,7 +35,6 @@ class LikesService {
       throw new InvariantError('Gagal menyukai album');
     }
     
-    // Invalidate the cache
     await this._cacheService.delete(`album:${albumId}:likes`);
   }
 
@@ -53,39 +49,36 @@ class LikesService {
     if (!result.rowCount) {
       throw new NotFoundError('Gagal batal menyukai. Anda belum menyukai album ini');
     }
-    
-    // Invalidate the cache
+
     await this._cacheService.delete(`album:${albumId}:likes`);
   }
 
   async getAlbumLikes(albumId) {
-    try {
-      // Try to get from cache first
-      const likes = await this._cacheService.get(`album:${albumId}:likes`);
+    // Coba ambil dari cache
+    const cached = await this._cacheService.get(`album:${albumId}:likes`);
+    if (cached !== null && cached !== undefined) {
       return {
-        likes: parseInt(likes, 10),
+        likes: parseInt(cached, 10),
         fromCache: true,
       };
-    } catch (error) {
-      // If not in cache, get from the database
-      await this._verifyAlbumExists(albumId);
-      
-      const query = {
-        text: 'SELECT COUNT(id) FROM user_album_likes WHERE album_id = $1',
-        values: [albumId],
-      };
-
-      const result = await this._pool.query(query);
-      const likes = parseInt(result.rows[0].count, 10);
-
-      // Save to cache
-      await this._cacheService.set(`album:${albumId}:likes`, likes);
-
-      return {
-        likes,
-        fromCache: false,
-      };
     }
+  
+    // Jika tidak ada di cache, ambil dari database
+    await this._verifyAlbumExists(albumId);
+    const query = {
+      text: 'SELECT COUNT(id) FROM user_album_likes WHERE album_id = $1',
+      values: [albumId],
+    };
+    const result = await this._pool.query(query);
+    const likes = parseInt(result.rows[0].count, 10);
+  
+    // Simpan ke cache selama 30 menit
+    await this._cacheService.set(`album:${albumId}:likes`, likes, 1800);
+  
+    return {
+      likes,
+      fromCache: false,
+    };
   }
 
   async _verifyAlbumExists(albumId) {

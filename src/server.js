@@ -4,8 +4,6 @@ const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
 const Inert = require('@hapi/inert');
 
-
-// Plugins
 const AlbumsPlugin = require('./albums');
 const SongsPlugin = require('./songs');
 const UsersPlugin = require('./users');
@@ -15,7 +13,6 @@ const ExportsPlugin = require('./exports');
 const UploadsPlugin = require('./uploads');
 const LikesPlugin = require('./likes');
 
-// Services
 const AlbumsService = require('./services/postgres/AlbumsService');
 const SongsService = require('./services/postgres/SongsService');
 const UsersService = require('./services/postgres/UsersService');
@@ -34,6 +31,8 @@ const AuthenticationsValidator = require('./validator/authentications');
 const PlaylistsValidator = require('./validator/playlists');
 const ExportsValidator = require('./validator/exports');
 const UploadsValidator = require('./validator/uploads');
+const cacheService = new CacheService();
+const likesService = new LikesService(cacheService);
 
 // Token Manager & ClientError
 const TokenManager = require('./tokenize/TokenManager');
@@ -48,7 +47,7 @@ const init = async () => {
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
   const playlistsService = new PlaylistsService(songsService);
-  const likesService = new LikesService();
+  const likesService = new LikesService(cacheService);
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -57,13 +56,12 @@ const init = async () => {
       cors: {
         origin: ['*'],
       },
-      files: { // Tambahkan ini untuk menyajikan file dari direktori
+      files: { 
         relativeTo: path.resolve(__dirname, 'uploads'),
       },
     },
   });
 
-  // Daftarkan plugin Inert untuk menyajikan file statis
   await server.register([
     {
       plugin: Jwt,
@@ -73,7 +71,6 @@ const init = async () => {
     },
   ]);
 
-  // Definisikan strategi autentikasi JWT
   server.auth.strategy('openmusicapp_jwt', 'jwt', {
     keys: process.env.ACCESS_TOKEN_KEY,
     verify: {
@@ -90,15 +87,15 @@ const init = async () => {
     }),
   });
 
-  // Daftarkan semua plugin Anda
+
   await server.register([
     {
         plugin: AlbumsPlugin,
         options: {
           service: albumsService,
           validator: AlbumValidator,
-          storageService, // Teruskan storageService
-          uploadsValidator: UploadsValidator, // Teruskan uploadsValidator
+          storageService, 
+          uploadsValidator: UploadsValidator, 
         },
     },
     {
@@ -142,7 +139,7 @@ const init = async () => {
         validator: UploadsValidator,
       },
     },
-    { // <-- TAMBAHKAN BLOK INI
+    { 
       plugin: LikesPlugin,
       options: {
         service: likesService,
@@ -150,7 +147,6 @@ const init = async () => {
     },
   ]);
   
-  // Handler untuk error
   server.ext('onPreResponse', (request, h) => {
 
     const { response } = request;
@@ -161,7 +157,6 @@ const init = async () => {
           message: response.message,
         }).code(response.statusCode);
       }
-      // 💡 Handle "Payload too large" (413) error
     if (
       response.output &&
       response.output.statusCode === 400 &&
