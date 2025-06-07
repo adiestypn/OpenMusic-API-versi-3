@@ -5,9 +5,10 @@ const NotFoundError = require('../../exceptions/NotFoundError');
 const AuthorizationError = require('../../exceptions/AuthorizationError'); 
 
 class PlaylistsService {
-  constructor(songsService) { 
+  constructor(songsService, cacheService ) { 
     this._pool = new Pool();
     this._songsService = songsService; 
+    this._cacheService = cacheService;
   }
 
   async addPlaylist({ name, owner }) {

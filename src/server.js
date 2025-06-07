@@ -22,6 +22,10 @@ const AuthenticationsService = require('./services/postgres/AuthenticationsServi
 const PlaylistsService = require('./services/postgres/PlaylistsService');
 const ProducerService = require('./services/rabbitmq/ProducerService');
 const StorageService = require('./services/storage/StorageService'); 
+const LikesPlugin = require('./likes');
+const LikesService = require('./services/postgres/LikesService');
+// cache
+const CacheService = require('./services/redis/CacheService');
 
 // Validators
 const AlbumValidator = require('./validator/albums');
@@ -37,9 +41,8 @@ const TokenManager = require('./tokenize/TokenManager');
 const ClientError = require('./exceptions/ClientError');
 
 const init = async () => {
-  // --- Lakukan inisialisasi SETELAH semua di-import ---
-  
-  // Perhatikan path folder, sesuaikan jika perlu.
+  const cacheService = new CacheService();
+
   const storageService = new StorageService(path.resolve(__dirname, 'uploads/file/images')); 
   
   const albumsService = new AlbumsService();
@@ -47,6 +50,7 @@ const init = async () => {
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
   const playlistsService = new PlaylistsService(songsService);
+  const likesService = new LikesService();
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -138,6 +142,12 @@ const init = async () => {
         storageService,
         albumsService,
         validator: UploadsValidator,
+      },
+    },
+    { // <-- TAMBAHKAN BLOK INI
+      plugin: LikesPlugin,
+      options: {
+        service: likesService,
       },
     },
   ]);
