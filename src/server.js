@@ -13,6 +13,7 @@ const AuthenticationsPlugin = require('./authentications');
 const PlaylistsPlugin = require('./playlists');
 const ExportsPlugin = require('./exports');
 const UploadsPlugin = require('./uploads');
+const LikesPlugin = require('./likes');
 
 // Services
 const AlbumsService = require('./services/postgres/AlbumsService');
@@ -22,9 +23,7 @@ const AuthenticationsService = require('./services/postgres/AuthenticationsServi
 const PlaylistsService = require('./services/postgres/PlaylistsService');
 const ProducerService = require('./services/rabbitmq/ProducerService');
 const StorageService = require('./services/storage/StorageService'); 
-const LikesPlugin = require('./likes');
 const LikesService = require('./services/postgres/LikesService');
-// cache
 const CacheService = require('./services/redis/CacheService');
 
 // Validators
@@ -42,7 +41,6 @@ const ClientError = require('./exceptions/ClientError');
 
 const init = async () => {
   const cacheService = new CacheService();
-
   const storageService = new StorageService(path.resolve(__dirname, 'uploads/file/images')); 
   
   const albumsService = new AlbumsService();

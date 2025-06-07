@@ -9,7 +9,6 @@ class LikesHandler {
     this.getAlbumLikesHandler = this.getAlbumLikesHandler.bind(this);
   }
   
-
   async postLikeAlbumHandler(request, h) {
     const { id: userId } = request.auth.credentials;
     const { id: albumId } = request.params;
@@ -38,14 +37,20 @@ class LikesHandler {
 
   async getAlbumLikesHandler(request, h) {
     const { id: albumId } = request.params;
-    const likes = await this._service.getAlbumLikes(albumId);
+    const { likes, fromCache } = await this._service.getAlbumLikes(albumId);
 
-    return {
+    const response = h.response({
       status: 'success',
       data: {
         likes,
       },
-    };
+    });
+
+    if (fromCache) {
+      response.header('X-Data-Source', 'cache');
+    }
+
+    return response;
   }
 }
 
