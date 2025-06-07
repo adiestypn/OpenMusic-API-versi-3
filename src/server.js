@@ -4,7 +4,6 @@ const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
 const Inert = require('@hapi/inert');
 
-// --- Pindahkan SEMUA import ke bagian atas ---
 
 // Plugins
 const AlbumsPlugin = require('./albums');
@@ -13,6 +12,7 @@ const UsersPlugin = require('./users');
 const AuthenticationsPlugin = require('./authentications');
 const PlaylistsPlugin = require('./playlists');
 const ExportsPlugin = require('./exports');
+const UploadsPlugin = require('./uploads');
 
 // Services
 const AlbumsService = require('./services/postgres/AlbumsService');
@@ -21,7 +21,7 @@ const UsersService = require('./services/postgres/UsersService');
 const AuthenticationsService = require('./services/postgres/AuthenticationsService');
 const PlaylistsService = require('./services/postgres/PlaylistsService');
 const ProducerService = require('./services/rabbitmq/ProducerService');
-const StorageService = require('./services/storage/StorageService'); // Import diletakkan di sini
+const StorageService = require('./services/storage/StorageService'); 
 
 // Validators
 const AlbumValidator = require('./validator/albums');
@@ -132,12 +132,19 @@ const init = async () => {
         validator: ExportsValidator,
       },
     },
+    {
+      plugin: UploadsPlugin,
+      options: {
+        storageService,
+        albumsService,
+        validator: UploadsValidator,
+      },
+    },
   ]);
   
   // Handler untuk error
   server.ext('onPreResponse', (request, h) => {
 
-    console.log('onPreResponse triggered!');
     const { response } = request;
     if (response instanceof Error) {
       if (response instanceof ClientError) {

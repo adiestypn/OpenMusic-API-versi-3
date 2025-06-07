@@ -8,23 +8,27 @@ class UploadImageHandler {
     autoBind(this);
   }
 
-  async postUploadImageHandler(request, h) {
-    const { id } = request.params;
-    const { cover } = request.payload;
-    this._validator.validateCoverImageHeaders(cover.hapi.headers);
+async postUploadImageHandler(request, h) {
+  const { id } = request.params;
+  const { cover } = request.payload;
 
-    const filename = await this._storageService.writeFile(cover, cover.hapi);
-    const url = `http://${process.env.HOST}:${process.env.PORT}/albums/${id}/${filename}`;
+  // 🔍 Ensure album exists
+  await this._albumsService.getAlbumById(id);
 
-    await this._albumsService.addAlbumCover(id, url);
+  this._validator.validateImageHeaders(cover.hapi.headers);
 
-    const response = h.response({
-      status: 'success',
-      message: 'Cover album berhasil ditambahkan',
-    });
-    response.code(201);
-    return response;
-  }
+  const filename = await this._storageService.writeFile(cover, cover.hapi);
+  const url = `http://${process.env.HOST}:${process.env.PORT}/uploads/images/${filename}`;
+
+  await this._albumsService.addAlbumCover(id, url);
+
+  const response = h.response({
+    status: 'success',
+    message: 'Cover album berhasil ditambahkan',
+  });
+  response.code(201);
+  return response;
+}
 }
 
 module.exports = UploadImageHandler;
