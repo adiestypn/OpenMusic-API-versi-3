@@ -1,0 +1,34 @@
+require('dotenv').config();
+const { Pool } = require('pg');
+
+class PlaylistsService {
+  constructor() {
+    this._pool = new Pool();
+  }
+
+  async getPlaylistForExport(playlistId) {
+    // 1. Mengambil detail playlist (id dan nama)
+    const playlistQuery = {
+      text: 'SELECT id, name FROM playlists WHERE id = $1',
+      values: [playlistId],
+    };
+    const playlistResult = await this._pool.query(playlistQuery);
+
+
+    const songsQuery = {
+      text: `SELECT s.id, s.title, s.performer 
+             FROM songs s
+             INNER JOIN playlist_songs ps ON s.id = ps.song_id
+             WHERE ps.playlist_id = $1`,
+      values: [playlistId],
+    };
+    const songsResult = await this._pool.query(songsQuery);
+
+    const playlist = playlistResult.rows[0];
+    playlist.songs = songsResult.rows;
+
+    return playlist;
+  }
+}
+
+module.exports = PlaylistsService;
